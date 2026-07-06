@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { isValidCredentials, SESSION_COOKIE } from "@/api/lib/auth";
+import { SESSION_COOKIE } from "@/api/lib/auth";
+import { validateUserCredentials } from "@/lib/github";
 
 export async function POST(request) {
   const body = await request.json();
@@ -13,20 +14,22 @@ export async function POST(request) {
     );
   }
 
-  if (!isValidCredentials(userName, password)) {
+  const result = await validateUserCredentials(userName, password);
+
+  if (!result.valid) {
     return NextResponse.json(
-      { success: false, message: "Invalid user name or password" },
-      { status: 401 }
+      { success: false, message: result.message },
+      { status: result.status || 401 }
     );
   }
 
   const response = NextResponse.json({
     success: true,
     message: "Login successful",
-    user: userName,
+    user: result.user,
   });
 
-  response.cookies.set(SESSION_COOKIE, userName, {
+  response.cookies.set(SESSION_COOKIE, result.user, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",

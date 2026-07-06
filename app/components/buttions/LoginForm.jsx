@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { JSON_HEADERS } from "@/lib/jsonHeaders";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -20,7 +21,7 @@ export default function LoginForm() {
     try {
       const response = await fetch("/api/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: JSON_HEADERS,
         body: JSON.stringify({
           user_name: userName,
           password,

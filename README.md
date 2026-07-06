@@ -1,36 +1,307 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# QueueBuster Dashboard
+
+A Next.js web dashboard for QueueBuster with session-based authentication, a centralized routing system for pages and API endpoints, and a Tailwind CSS design system aligned with QueueBuster branding.
+
+**Repository:** [github.com/babureddy-ui/qbuster-dashboard](https://github.com/babureddy-ui/qbuster-dashboard)
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Tech Stack](#tech-stack)
+- [Features](#features)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Routing](#routing)
+  - [Pages](#pages)
+  - [API Endpoints](#api-endpoints)
+- [Authentication](#authentication)
+- [Styling & Theming](#styling--theming)
+- [Scripts](#scripts)
+- [Configuration](#configuration)
+- [Deployment](#deployment)
+- [Contributing](#contributing)
+
+---
+
+## Overview
+
+QueueBuster Dashboard is a lightweight admin-style web application built on the Next.js App Router. It provides:
+
+- A branded login screen at the root URL (`/`)
+- Protected dashboard pages that require an active session
+- A registry-based routing pattern so new pages and API handlers can be added without creating new Next.js route folders for every endpoint
+
+The app uses React Server Components where appropriate (e.g. session checks on protected pages) and Client Components for interactive forms and buttons.
+
+---
+
+## Tech Stack
+
+
+| Layer     | Technology                                                |
+| --------- | --------------------------------------------------------- |
+| Framework | [Next.js 16](https://nextjs.org) (App Router)             |
+| UI        | [React 19](https://react.dev)                             |
+| Styling   | [Tailwind CSS 4](https://tailwindcss.com)                 |
+| Fonts     | [Geist](https://vercel.com/font) (via `next/font/google`) |
+| Linting   | ESLint with `eslint-config-next`                          |
+| Language  | JavaScript (JSX) with path aliases via `jsconfig.json`    |
+
+
+---
+
+## Features
+
+- **Login flow** — Username/password form with validation, loading states, show/hide password toggle, and error messaging
+- **Session cookies** — HTTP-only `session` cookie set on successful login (24-hour expiry)
+- **Protected routes** — Server-side session check on the welcome page; unauthenticated users are redirected to `/`
+- **Centralized page registry** — Add a page file and register it in one place; it becomes available at `/{key}`
+- **Centralized API registry** — Add API handler modules and register them; they are served at `/api/{key}`
+- **Dark mode** — CSS variables and Tailwind `dark:` variants; development mode syncs with the Next.js devtools theme toggle
+- **QueueBuster branding** — Custom blue palette (`qb-blue`, `qb-blue-hover`) and logo asset
+
+---
+
+## Project Structure
+
+```
+qbuster-dashboard/
+├── app/
+│   ├── [...page]/              # Catch-all dynamic page router
+│   │   └── page.jsx
+│   ├── api/
+│   │   ├── [...path]/          # Catch-all API dispatcher
+│   │   │   └── route.js
+│   │   ├── auth/
+│   │   │   ├── login.js        # POST /api/login
+│   │   │   └── logout.js       # POST /api/logout
+│   │   ├── lib/
+│   │   │   └── auth.js         # Credentials & session helpers
+│   │   └── routes.js           # API route registry
+│   ├── components/
+│   │   ├── buttions/           # Interactive UI components
+│   │   │   ├── LoginForm.jsx
+│   │   │   └── LogoutButton.jsx
+│   │   ├── DevToolsThemeSync.jsx
+│   │   └── WelcomePage.jsx
+│   ├── pages/                  # Page modules (registered in routes.js)
+│   │   ├── login.jsx           # Root login page (re-exported from app/page.js)
+│   │   ├── welcome-page.jsx    # Protected welcome screen
+│   │   ├── test-page.jsx       # Example public page
+│   │   └── routes.js           # Page route registry
+│   ├── styles/
+│   │   └── globals.css         # Tailwind imports & design tokens
+│   ├── layout.js               # Root layout, fonts, metadata
+│   └── page.js                 # Entry point → login page
+├── public/
+│   └── assets/
+│       └── logonew.svg         # QueueBuster logo
+├── eslint.config.mjs
+├── jsconfig.json               # `@/*` → `./app/*` path alias
+├── next.config.mjs
+├── package.json
+└── postcss.config.mjs
+```
+
+### Path Aliases
+
+Imports use the `@/` prefix, mapped to the `app/` directory:
+
+```js
+import LoginForm from "@/components/buttions/LoginForm";
+import { SESSION_COOKIE } from "@/api/lib/auth";
+```
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- [Node.js](https://nodejs.org) 18.18 or later (Node 20+ recommended for Next.js 16)
+- npm, yarn, pnpm, or bun
+
+### Installation
+
+```bash
+git clone https://github.com/babureddy-ui/qbuster-dashboard.git
+cd qbuster-dashboard
+npm install
+```
+
+### Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser. The login page loads at the root URL.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Production Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+### Lint
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run lint
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Routing
 
-## Deploy on Vercel
+This project uses a **registry pattern** instead of one Next.js file per URL. Two catch-all routes dispatch to registered handlers.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Pages
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+| URL | Page  | Auth   |
+| --- | ----- | ------ |
+| `/` | Login | Public |
+
+
+**How it works**
+
+1. `app/[...page]/page.jsx` reads the URL segments (e.g. `welcome-page`).
+2. It looks up the segment in `app/pages/routes.js`.
+3. If found, it renders the registered component; otherwise it returns a 404.
+
+**Add a new page**
+
+1. Create a file under `app/pages/`, e.g. `dashboard.jsx`:
+
+```jsx
+export const metadata = {
+  title: "Dashboard",
+  description: "Main dashboard",
+};
+
+export default function Dashboard() {
+  return <div>Dashboard content</div>;
+}
+```
+
+1. Register it in `app/pages/routes.js`:
+
+```js
+import Dashboard from "./dashboard";
+
+export const pageRoutes = {
+  "welcome-page": WelcomePage,
+  "test-page": TestPage,
+  "dashboard": Dashboard,  // → /dashboard
+};
+```
+
+For protected pages, read the session cookie server-side (see `app/pages/welcome-page.jsx` for the pattern).
+
+### API Endpoints
+
+
+| Method | Endpoint      | Description                         |
+| ------ | ------------- | ----------------------------------- |
+| `POST` | `/api/login`  | Authenticate and set session cookie |
+| `POST` | `/api/logout` | Clear session cookie                |
+
+
+**How it works**
+
+1. `app/api/[...path]/route.js` handles `GET`, `POST`, `PUT`, `PATCH`, and `DELETE`.
+2. It resolves the path (e.g. `login`) against `app/api/routes.js`.
+3. It calls the exported handler for the requested HTTP method.
+
+**Add a new API**
+
+1. Create a handler module, e.g. `app/api/users.js`:
+
+```js
+import { NextResponse } from "next/server";
+
+export async function GET() {
+  return NextResponse.json({ users: [] });
+}
+```
+
+1. Register it in `app/api/routes.js`:
+
+```js
+import * as users from "./users";
+
+export const apiRoutes = {
+  login,
+  logout,
+  users,  // → /api/users
+};
+```
+
+---
+
+## Authentication
+
+Authentication is **cookie-based** with a simple credential check suitable for development and demos.
+
+### Flow
+
+1. User submits username and password via `LoginForm`.
+2. `POST /api/login` validates credentials against `app/api/lib/auth.js`.
+3. On success, an HTTP-only `session` cookie is set (value = username, `maxAge` = 24 hours).
+4. Client redirects to `/welcome-page`.
+5. `welcome-page.jsx` reads the cookie on the server; missing session → redirect to `/`.
+6. `POST /api/logout` deletes the cookie and redirects to `/`.
+
+### Default Credentials
+
+Defined in `app/api/lib/auth.js`:
+
+
+| Field    | Value      |
+| -------- | ---------- |
+| Username | `vishnu`   |
+| Password | `vishnu23` |
+
+
+> **Security note:** Credentials are hardcoded for demo purposes. Before production use, move secrets to environment variables, integrate a real identity provider or database, and never commit real credentials to source control.
+
+### Session Cookie Options
+
+
+| Option     | Value                     |
+| ---------- | ------------------------- |
+| Name       | `session`                 |
+| `httpOnly` | `true`                    |
+| `secure`   | `true` in production only |
+| `sameSite` | `lax`                     |
+| `path`     | `/`                       |
+| `maxAge`   | 86,400 seconds (24 hours) |
+
+
+---
+
+## Scripts
+
+
+| Command         | Description                                |
+| --------------- | ------------------------------------------ |
+| `npm run dev`   | Start development server (with hot reload) |
+| `npm run build` | Create an optimized production build       |
+| `npm start`     | Serve the production build                 |
+| `npm run lint`  | Run ESLint                                 |
+
+
+---
+
+## Configuration
+
+### `next.config.mjs`
+
+Minimal Next.js configuration. Extend here for redirects, rewrites, image domains, etc.
+
+### `jsconfig.json`
+
+Maps `@/`* to `./app/`* for cleaner imports across the codebase.

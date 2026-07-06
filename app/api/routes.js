@@ -1,5 +1,6 @@
 import * as login from "./auth/login";
 import * as logout from "./auth/logout";
+import * as pages from "./content/pages";
 
 /**
  * Central API route registry.
@@ -12,4 +13,5 @@ import * as logout from "./auth/logout";
 export const apiRoutes = {
   login,
   logout,
+  pages,
 };
