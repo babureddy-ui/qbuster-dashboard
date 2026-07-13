@@ -1,4 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
+import ApiProvider from "@/api/provider";
 import DevToolsThemeSync from "@/components/DevToolsThemeSync";
 import "@/styles/globals.css";
 
@@ -26,7 +27,7 @@ export default function RootLayout({ children }) {
     >
       <body className="min-h-full flex flex-col font-sans">
         <DevToolsThemeSync />
-        {children}
+        <ApiProvider>{children}</ApiProvider>
       </body>
     </html>
   );

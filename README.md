@@ -74,22 +74,22 @@ qbuster-dashboard/
 │   ├── api/
 │   │   ├── [...path]/          # Catch-all API dispatcher
 │   │   │   └── route.js
-│   │   ├── auth/
-│   │   │   ├── login.js        # POST /api/login
-│   │   │   └── logout.js       # POST /api/logout
-│   │   ├── lib/
-│   │   │   └── auth.js         # Credentials & session helpers
+│   │   ├── actions/
+│   │   │   └── auth.js         # login handler + useLogin
+│   │   ├── endpoints/
+│   │   │   └── index.js        # API path constants
 │   │   └── routes.js           # API route registry
 │   ├── components/
-│   │   ├── buttions/           # Interactive UI components
-│   │   │   ├── LoginForm.jsx
-│   │   │   └── LogoutButton.jsx
+│   │   ├── layout/
+│   │   │   ├── DashboardShell.jsx
+│   │   │   ├── Header.jsx
+│   │   │   └── Sidebar.jsx
 │   │   ├── DevToolsThemeSync.jsx
-│   │   └── WelcomePage.jsx
+│   │   └── buttions/
+│   │       └── LoginForm.jsx
 │   ├── pages/                  # Page modules (registered in routes.js)
 │   │   ├── login.jsx           # Root login page (re-exported from app/page.js)
-│   │   ├── welcome-page.jsx    # Protected welcome screen
-│   │   ├── test-page.jsx       # Example public page
+│   │   ├── dashboard.jsx       # Protected dashboard (sidebar + header)
 │   │   └── routes.js           # Page route registry
 │   ├── styles/
 │   │   └── globals.css         # Tailwind imports & design tokens
@@ -111,7 +111,7 @@ Imports use the `@/` prefix, mapped to the `app/` directory:
 
 ```js
 import LoginForm from "@/components/buttions/LoginForm";
-import { SESSION_COOKIE } from "@/api/lib/auth";
+import { SESSION_COOKIE } from "@/api/utils/session";
 ```
 
 ---
@@ -168,7 +168,7 @@ This project uses a **registry pattern** instead of one Next.js file per URL. Tw
 
 **How it works**
 
-1. `app/[...page]/page.jsx` reads the URL segments (e.g. `welcome-page`).
+1. `app/[...page]/page.jsx` reads the URL segments (e.g. `dashboard`).
 2. It looks up the segment in `app/pages/routes.js`.
 3. If found, it renders the registered component; otherwise it returns a 404.
 
@@ -190,24 +190,21 @@ export default function Dashboard() {
 1. Register it in `app/pages/routes.js`:
 
 ```js
-import Dashboard from "./dashboard";
+import DashboardPage from "./dashboard";
 
 export const pageRoutes = {
-  "welcome-page": WelcomePage,
-  "test-page": TestPage,
-  "dashboard": Dashboard,  // → /dashboard
+  dashboard: DashboardPage,  // → /dashboard
 };
 ```
 
-For protected pages, read the session cookie server-side (see `app/pages/welcome-page.jsx` for the pattern).
+For protected pages, read the session cookie server-side (see `app/pages/dashboard.jsx` for the pattern).
 
 ### API Endpoints
 
 
-| Method | Endpoint      | Description                         |
-| ------ | ------------- | ----------------------------------- |
-| `POST` | `/api/login`  | Authenticate and set session cookie |
-| `POST` | `/api/logout` | Clear session cookie                |
+| Method | Endpoint     | Description                         |
+| ------ | ------------ | ----------------------------------- |
+| `POST` | `/api/login` | Authenticate and set session cookie |
 
 
 **How it works**
@@ -231,12 +228,12 @@ export async function GET() {
 1. Register it in `app/api/routes.js`:
 
 ```js
-import * as users from "./users";
+import { login } from "./actions/auth";
+import { someHandler } from "./someHandler";
 
 export const apiRoutes = {
   login,
-  logout,
-  users,  // → /api/users
+  users: someHandler,  // → /api/users
 };
 ```
 
@@ -244,29 +241,15 @@ export const apiRoutes = {
 
 ## Authentication
 
-Authentication is **cookie-based** with a simple credential check suitable for development and demos.
+Authentication is **cookie-based**. Credentials are validated by the Cloudflare content server.
 
 ### Flow
 
 1. User submits username and password via `LoginForm`.
-2. `POST /api/login` validates credentials against `app/api/lib/auth.js`.
+2. `POST /api/login` proxies to `NEXT_PUBLIC_API_BASE_URL/api/login`.
 3. On success, an HTTP-only `session` cookie is set (value = username, `maxAge` = 24 hours).
-4. Client redirects to `/welcome-page`.
-5. `welcome-page.jsx` reads the cookie on the server; missing session → redirect to `/`.
-6. `POST /api/logout` deletes the cookie and redirects to `/`.
-
-### Default Credentials
-
-Defined in `app/api/lib/auth.js`:
-
-
-| Field    | Value      |
-| -------- | ---------- |
-| Username | `vishnu`   |
-| Password | `vishnu23` |
-
-
-> **Security note:** Credentials are hardcoded for demo purposes. Before production use, move secrets to environment variables, integrate a real identity provider or database, and never commit real credentials to source control.
+4. Client redirects to `/dashboard`.
+5. `dashboard.jsx` reads the cookie on the server; missing session → redirect to `/`.
 
 ### Session Cookie Options
 
@@ -297,6 +280,12 @@ Defined in `app/api/lib/auth.js`:
 ---
 
 ## Configuration
+
+### Environment
+
+```env
+NEXT_PUBLIC_API_BASE_URL=https://content-server-cloudflare.qbuster.workers.dev
+```
 
 ### `next.config.mjs`
 

@@ -3,44 +3,26 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { JSON_HEADERS } from "@/lib/jsonHeaders";
+import { useLogin } from "@/api/actions/auth";
 
 export default function LoginForm() {
   const router = useRouter();
+  const login = useLogin();
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");
-    setIsLoading(true);
 
     try {
-      const response = await fetch("/api/login", {
-        method: "POST",
-        headers: JSON_HEADERS,
-        body: JSON.stringify({
-          user_name: userName,
-          password,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.message || "Login failed");
-        return;
-      }
-
-      router.push("/welcome-page");
+      await login.mutateAsync({ username: userName, password });
+      router.push("/dashboard");
       router.refresh();
-    } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setIsLoading(false);
+    } catch (err) {
+      setError(err.message || "Something went wrong. Please try again.");
     }
   }
 
@@ -59,7 +41,6 @@ export default function LoginForm() {
           className="h-auto w-48"
         />
         <div className="flex w-full flex-col gap-1 text-center">
-           
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
             Enter your credentials to continue
           </p>
@@ -122,10 +103,10 @@ export default function LoginForm() {
 
       <button
         type="submit"
-        disabled={isLoading}
+        disabled={login.isPending}
         className="mt-1 rounded-lg bg-qb-blue px-4 py-2.5 text-sm font-medium text-white transition hover:bg-qb-blue-hover disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isLoading ? "Signing in..." : "Sign in"}
+        {login.isPending ? "Signing in..." : "Sign in"}
       </button>
     </form>
   );
