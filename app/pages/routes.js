@@ -9,3 +9,15 @@ export const pageRoutes = {
   dashboard: DashboardPage,
   "industry-pages": IndustryPagesPage,
 };
+
+/** Shared title/description shown by DashboardShell for every page. */
+export const pageMeta = {
+  dashboard: {
+    title: "Dashboard",
+    description: "Website content management dashboard.",
+  },
+  "industry-pages": {
+    title: "Industry Pages",
+    description: "Manage industry page content here.",
+  },
+};

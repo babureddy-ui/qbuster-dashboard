@@ -1,5 +1,3 @@
-import { JSON_HEADERS } from "@/lib/jsonHeaders";
-
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   "https://content-server-cloudflare.qbuster.workers.dev";
@@ -12,8 +10,8 @@ export class ApiError extends Error {
   }
 }
 
-function resolveUrl(path, { local = false } = {}) {
-  if (local || path.startsWith("http://") || path.startsWith("https://")) {
+function resolveUrl(path) {
+  if (path.startsWith("http://") || path.startsWith("https://")) {
     return path;
   }
 
@@ -22,17 +20,22 @@ function resolveUrl(path, { local = false } = {}) {
   return `${base}${normalizedPath}`;
 }
 
-/** Shared fetch helper. Use `{ local: true }` for Next.js BFF routes. */
+/**
+ * Call the content server directly.
+ * Uses `credentials: "include"` so the content-server auth cookie is sent and verified there.
+ */
 export async function apiClient(path, options = {}) {
-  const { method = "GET", body, headers, local = false, ...rest } = options;
+  const { method = "GET", body, headers, ...rest } = options;
 
-  const response = await fetch(resolveUrl(path, { local }), {
+  const response = await fetch(resolveUrl(path), {
     method,
     headers: {
-      ...JSON_HEADERS,
+      "Content-Type": "application/json",
+      Accept: "application/json",
       ...headers,
     },
     body: body != null ? JSON.stringify(body) : undefined,
+    credentials: "include",
     ...rest,
   });
 

@@ -8,8 +8,9 @@ function makeQueryClient() {
     defaultOptions: {
       queries: {
         refetchOnWindowFocus: false,
-        retry: 1,
-        staleTime: 0,
+        refetchOnReconnect: false,
+        retry: 0,
+        staleTime: 60 * 1000,
         gcTime: 30 * 60 * 1000,
       },
       mutations: {

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useLogin } from "@/api/actions/auth";
+import { ErrorAlert } from "@/components/ui/ErrorBoundary";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -47,11 +48,7 @@ export default function LoginForm() {
         </div>
       </div>
 
-      {error ? (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-950 dark:text-red-400">
-          {error}
-        </p>
-      ) : null}
+      <ErrorAlert message={error} />
 
       <div className="flex flex-col gap-2">
         <label
