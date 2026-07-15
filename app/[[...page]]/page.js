@@ -18,7 +18,7 @@ export default async function Page({ params }) {
   }
 
   const routeKey = segments.join("/");
-  const PageComponent = pageRoutes[routeKey];
+  const PageComponent = pageRoutes.find((r) => r.route === routeKey)?.component;
 
   return (
     <DashboardShell>

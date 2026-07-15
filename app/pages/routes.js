@@ -1,12 +1,27 @@
 import DashboardPage from "./dashboard";
-import IndustryPagesPage from "./industryPages";
+import IndustryPagesList from "./industryPages/List";
+import IndustryPagesCreate from "./industryPages/Create";
 
 /**
  * Central page registry.
- * Add a page file here, then register it — URL will be /{key}
- * Page title / description / buttons are defined on each page via PageHeader.
+ * `route` = URL path without a leading slash.
+ * `hideSidebar: true` keeps the route out of the sidebar.
  */
-export const pageRoutes = {
-  dashboard: DashboardPage,
-  "industry-pages": IndustryPagesPage,
-};
+export const pageRoutes = [
+  {
+    route: "dashboard",
+    name: "Dashboard",
+    component: DashboardPage,
+  },
+  {
+    route: "industry-pages/list",
+    name: "Industry Pages",
+    component: IndustryPagesList,
+  },
+  {
+    route: "industry-pages/create",
+    name: "Create Industry Page",
+    component: IndustryPagesCreate,
+    hideSidebar: true,
+  },
+];

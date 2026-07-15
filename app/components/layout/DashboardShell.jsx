@@ -6,16 +6,16 @@ import { PageBody, PageErrorProvider } from "@/components/ui/PageError";
 
 export default function DashboardShell({ userName, children }) {
   return (
-    <div className="flex min-h-full flex-1 bg-zinc-50 dark:bg-black">
+    <div className="min-h-dvh bg-zinc-50 dark:bg-black">
       <Sidebar />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <Header userName={userName} />
-        <main className="flex-1 p-6">
+      <Header userName={userName} />
+      <main className="ml-56 min-h-dvh pt-14">
+        <div className="p-6">
           <PageErrorProvider>
             <PageBody>{children}</PageBody>
           </PageErrorProvider>
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
 }

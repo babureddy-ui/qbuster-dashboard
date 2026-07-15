@@ -3,17 +3,21 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { pageRoutes } from "@/pages/routes";
 
-const navItems = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/industry-pages", label: "Industry Pages" },
-];
+const navItems = pageRoutes
+  .filter((item) => !item.hideSidebar)
+  .map((item) => ({
+    href: `/${item.route}`,
+    name: item.name,
+    match: `/${item.route.split("/")[0]}`,
+  }));
 
 export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-56 shrink-0 flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
+    <aside className="fixed inset-y-0 left-0 z-30 flex w-56 flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       <div className="flex h-14 items-center border-b border-zinc-200 px-4 dark:border-zinc-800">
         <Link href="/dashboard" className="flex items-center">
           <Image
@@ -27,9 +31,10 @@ export default function Sidebar() {
         </Link>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-1 p-3">
+      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
         {navItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive =
+            pathname === item.match || pathname.startsWith(`${item.match}/`);
 
           return (
             <Link
@@ -41,7 +46,7 @@ export default function Sidebar() {
                   : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900"
               }`}
             >
-              {item.label}
+              {item.name}
             </Link>
           );
         })}

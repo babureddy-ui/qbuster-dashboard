@@ -30,3 +30,82 @@ body {
 html.theme-ready body {
   visibility: visible;
 }
+
+.input-field-div {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.input-field {
+  margin: 8px 0 0 0 !important;
+}
+
+.input-field--flush {
+  margin-top: 0 !important;
+}
+
+.input-field.ant-input,
+.input-field.ant-input-affix-wrapper,
+textarea.input-field {
+  min-height: 40px;
+  padding: 8px !important;
+}
+
+.input-field.ant-select {
+  height: 40px;
+}
+
+.input-field.ant-select .ant-select-selector {
+  height: 40px !important;
+  min-height: 40px !important;
+  padding-inline: 11px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.input-field.ant-select .ant-select-selection-search-input,
+.input-field.ant-select .ant-select-selection-item,
+.input-field.ant-select .ant-select-selection-placeholder {
+  line-height: 38px !important;
+}
+
+.error-message {
+  font-size: 12px;
+  color: red;
+  margin: 0 0 10px 0;
+  font-weight: 400;
+}
+
+.req-sign {
+  color: red;
+  font-size: 18px;
+  position: relative;
+  left: 5px;
+  top: -3px;
+}
+
+.text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.image-url-preview {
+  margin-top: 8px;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid #e4e4e7;
+  background: #fafafa;
+}
+
+.image-url-preview img {
+  max-height: 160px;
+  width: 100%;
+  object-fit: contain;
+}
+
+.dark .image-url-preview {
+  border-color: #27272a;
+  background: #18181b;
+}
