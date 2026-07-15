@@ -2,6 +2,7 @@
 
 import { useIndustryPages } from "@/api/actions/industryPages";
 import DataTable from "@/components/ui/DataTable";
+import PageHeader from "@/components/ui/PageHeader";
 import { usePageError } from "@/components/ui/PageError";
 
 const columns = [
@@ -41,16 +42,34 @@ const columns = [
 ];
 
 export default function IndustryPagesPage() {
-  const { data: pages = [], error, isLoading } = useIndustryPages();
+  const { data: pages = [], error, isPending, isFetching } =
+    useIndustryPages();
   usePageError(error, "Failed to load industry pages");
 
+  const loading = isPending || isFetching;
+
   return (
-    <DataTable
-      columns={columns}
-      data={pages}
-      loading={isLoading}
-      emptyMessage="No industry pages found."
-      rowKey={(page) => `${page.page_id}-${page.location}-${page.route}`}
-    />
+    <div className="flex flex-col gap-4">
+      <PageHeader
+        title="Industry Pages"
+        description="Manage industry page content here."
+        buttons={[
+          {
+            key: "create",
+            label: "Create",
+            href: "/industry-pages/create",
+            variant: "primary",
+          },
+        ]}
+      />
+
+      <DataTable
+        columns={columns}
+        data={pages}
+        loading={loading}
+        emptyMessage="No industry pages found."
+        rowKey={(page) => `${page.page_id}-${page.location}-${page.route}`}
+      />
+    </div>
   );
 }

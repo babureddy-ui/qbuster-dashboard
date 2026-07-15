@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
+import AntdThemeProvider from "@/components/ui/AntdThemeProvider";
 
 function makeQueryClient() {
   return new QueryClient({
@@ -20,10 +21,14 @@ function makeQueryClient() {
   });
 }
 
-export default function ApiProvider({ children }) {
+export default function ApiProvider({ children, initialIsDark = false }) {
   const [queryClient] = useState(() => makeQueryClient());
 
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <AntdThemeProvider initialIsDark={initialIsDark}>
+        {children}
+      </AntdThemeProvider>
+    </QueryClientProvider>
   );
 }

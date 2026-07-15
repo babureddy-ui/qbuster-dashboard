@@ -12,18 +12,18 @@ export default function DataTable({
   ...rest
 }) {
   return (
-    
-    <div className="rounded border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
-    <Table
-      columns={columns}
-      dataSource={data}
-      loading={loading}
-      rowKey={rowKey}
-      pagination={pagination}
-      locale={{ emptyText: emptyMessage }}
-      scroll={{ x: true }}
-      {...rest}
-    />
+    <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
+      <Table
+        columns={columns}
+        dataSource={data}
+        loading={loading}
+        rowKey={rowKey}
+        pagination={pagination}
+        locale={{ emptyText: loading ? " " : emptyMessage }}
+        scroll={data.length ? { x: true } : undefined}
+        sticky
+        {...rest}
+      />
     </div>
   );
 }

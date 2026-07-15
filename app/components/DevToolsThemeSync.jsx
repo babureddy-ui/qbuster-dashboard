@@ -1,47 +1,43 @@
 "use client";
 
 import { useEffect } from "react";
+import { applyTheme, resolveTheme, THEME_STORAGE_KEY } from "@/lib/theme";
 
 function applyThemeFromPortal(portal) {
-  const html = document.documentElement;
-
   if (portal.classList.contains("dark")) {
-    html.classList.add("dark");
-    html.classList.remove("light");
+    applyTheme("dark");
     return;
   }
 
   if (portal.classList.contains("light")) {
-    html.classList.add("light");
-    html.classList.remove("dark");
+    applyTheme("light");
     return;
   }
 
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  html.classList.toggle("dark", prefersDark);
-  html.classList.toggle("light", !prefersDark);
-}
-
-function applySystemTheme() {
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  document.documentElement.classList.toggle("dark", prefersDark);
-  document.documentElement.classList.toggle("light", !prefersDark);
+  // Portal has no explicit theme yet — keep the stored/boot theme.
+  applyTheme(resolveTheme());
 }
 
 export default function DevToolsThemeSync() {
   useEffect(() => {
+    applyTheme(resolveTheme());
+
     if (process.env.NODE_ENV !== "development") {
-      applySystemTheme();
-      return;
+      const media = window.matchMedia("(prefers-color-scheme: dark)");
+      const onSystemChange = () => {
+        if (!window.localStorage.getItem(THEME_STORAGE_KEY)) {
+          applyTheme(media.matches ? "dark" : "light");
+        }
+      };
+      media.addEventListener("change", onSystemChange);
+      return () => media.removeEventListener("change", onSystemChange);
     }
 
     let observer;
 
     const attach = () => {
       const portal = document.querySelector("nextjs-portal");
-      if (!portal) {
-        return false;
-      }
+      if (!portal) return false;
 
       applyThemeFromPortal(portal);
       observer = new MutationObserver(() => applyThemeFromPortal(portal));
@@ -54,9 +50,7 @@ export default function DevToolsThemeSync() {
 
     if (!attach()) {
       const interval = setInterval(() => {
-        if (attach()) {
-          clearInterval(interval);
-        }
+        if (attach()) clearInterval(interval);
       }, 200);
 
       return () => {
@@ -65,19 +59,7 @@ export default function DevToolsThemeSync() {
       };
     }
 
-    const media = window.matchMedia("(prefers-color-scheme: dark)");
-    const onSystemChange = () => {
-      const portal = document.querySelector("nextjs-portal");
-      if (portal && !portal.classList.contains("light") && !portal.classList.contains("dark")) {
-        applyThemeFromPortal(portal);
-      }
-    };
-    media.addEventListener("change", onSystemChange);
-
-    return () => {
-      observer?.disconnect();
-      media.removeEventListener("change", onSystemChange);
-    };
+    return () => observer?.disconnect();
   }, []);
 
   return null;
