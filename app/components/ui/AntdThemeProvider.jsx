@@ -1,6 +1,7 @@
 "use client";
 
-import { ConfigProvider, theme } from "antd";
+import { StyleProvider } from "@ant-design/cssinjs";
+import { App, ConfigProvider, theme } from "antd";
 import { useLayoutEffect, useState } from "react";
 
 function getIsDark() {
@@ -43,17 +44,21 @@ export default function AntdThemeProvider({
   }
 
   return (
-    <ConfigProvider
-      theme={{
-        algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm,
-        token: {
-          colorPrimary: "#2a6ab4",
-          borderRadius: 8,
-          colorBgContainer: isDark ? "#09090b" : "#ffffff",
-        },
-      }}
-    >
-      {children}
-    </ConfigProvider>
+    // `layer` moves antd's CSS-in-JS output into `@layer antd`, so Tailwind
+    // utility classes (e.g. our own text/link colors) can override it. See globals.css.
+    <StyleProvider layer>
+      <ConfigProvider
+        theme={{
+          algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm,
+          token: {
+            colorPrimary: "#2a6ab4",
+            borderRadius: 8,
+            colorBgContainer: isDark ? "#09090b" : "#ffffff",
+          },
+        }}
+      >
+        <App>{children}</App>
+      </ConfigProvider>
+    </StyleProvider>
   );
 }

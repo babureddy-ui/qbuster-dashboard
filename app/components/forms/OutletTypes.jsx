@@ -7,6 +7,7 @@ export function createEmptyOutletType() {
   return {
     image: "",
     title: "",
+    hoverColor: "",
   };
 }
 
@@ -102,6 +103,20 @@ export default function OutletTypes({
                     placeholder="Enter title"
                     disabled={disabled}
                     errorMessage={errors[index]?.title}
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <TextInput
+                    name={`outletTypes.${index}.hoverColor`}
+                    label="Hover color"
+                    value={item.hoverColor ?? ""}
+                    onChange={(event) =>
+                      handleItemChange(index, "hoverColor", event.target.value)
+                    }
+                    placeholder="#F68E1E"
+                    disabled={disabled}
+                    errorMessage={errors[index]?.hoverColor}
                   />
                 </div>
               </div>

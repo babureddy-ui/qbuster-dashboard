@@ -6,7 +6,6 @@ import {
   TextInput,
 } from "@/components/ui/InputFields";
 import { Button, Card } from "antd";
-import { createEmptyOtherImage } from "@/components/forms/IndustryHeroSection";
 
 const POSITION_FIELDS = [
   { key: "width", label: "Width", placeholder: "e.g. 10rem" },
@@ -17,6 +16,19 @@ const POSITION_FIELDS = [
   { key: "right", label: "Right", placeholder: "e.g. 10rem" },
 ];
 
+export function createEmptyFeatureImage() {
+  return {
+    url: "",
+    alt: "",
+    width: "",
+    height: "",
+    top: "",
+    left: "",
+    bottom: "",
+    right: "",
+  };
+}
+
 export function createEmptyFeature() {
   return {
     icon: "",
@@ -26,13 +38,14 @@ export function createEmptyFeature() {
     points: ["", ""],
     btnText: "",
     centerImage: "",
+    imageAlt: "",
     imageWidth: "",
     imageHeight: "",
     imageTop: "",
     imageLeft: "",
     imageBottom: "",
     imageRight: "",
-    otherImages: [createEmptyOtherImage(), createEmptyOtherImage()],
+    otherImages: [createEmptyFeatureImage()],
     backgroundCol: "",
     tagCol: "",
   };
@@ -97,7 +110,7 @@ function FeatureItem({
   const points = Array.isArray(feature.points) ? feature.points : ["", ""];
   const otherImages = Array.isArray(feature.otherImages)
     ? feature.otherImages
-    : [createEmptyOtherImage(), createEmptyOtherImage()];
+    : [createEmptyFeatureImage()];
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -134,7 +147,7 @@ function FeatureItem({
   }
 
   function handleAddOtherImage() {
-    updateOtherImages([...otherImages, createEmptyOtherImage()]);
+    updateOtherImages([...otherImages, createEmptyFeatureImage()]);
   }
 
   function handleRemoveOtherImage(imageIndex) {
@@ -282,6 +295,18 @@ function FeatureItem({
           />
         </div>
 
+        <div className="sm:col-span-2">
+          <TextInput
+            name="imageAlt"
+            label="Center image alt text"
+            value={feature.imageAlt ?? ""}
+            onChange={handleChange}
+            placeholder="Enter alt text"
+            disabled={disabled}
+            errorMessage={errors.imageAlt}
+          />
+        </div>
+
         <CenterImagePositionFields
           values={feature}
           errors={errors}
@@ -340,6 +365,24 @@ function FeatureItem({
                   />
                 </div>
 
+                <div className="sm:col-span-2">
+                  <TextInput
+                    name={`otherImages.${imageIndex}.alt`}
+                    label="Alt text"
+                    value={image.alt ?? ""}
+                    onChange={(event) =>
+                      handleOtherImageFieldChange(
+                        imageIndex,
+                        "alt",
+                        event.target.value
+                      )
+                    }
+                    placeholder="Enter alt text"
+                    disabled={disabled}
+                    errorMessage={errors.otherImages?.[imageIndex]?.alt}
+                  />
+                </div>
+
                 <OtherImagePositionFields
                   image={image}
                   index={imageIndex}
@@ -390,12 +433,6 @@ export default function FeaturesForm({
 
   return (
     <div className="flex flex-col gap-6">
-      {/* <div className="flex items-center justify-between gap-3">
-        <h3 className="text-[1.2rem] font-semibold text-zinc-900 dark:text-zinc-50">
-          {title}
-        </h3>
-      </div> */}
-
       {featureList.map((feature, index) => (
         <FeatureItem
           key={index}

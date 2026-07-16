@@ -10,6 +10,7 @@ import { Button, Card } from "antd";
 export function createEmptyOtherImage() {
   return {
     url: "",
+    alt: "",
     width: "",
     height: "",
     top: "",
@@ -162,6 +163,18 @@ export default function IndustryHeroSection({
           />
         </div>
 
+        <div className="sm:col-span-2">
+          <TextInput
+            name="imageAlt"
+            label="Center image alt text"
+            value={values.imageAlt ?? ""}
+            onChange={handleChange}
+            placeholder="Enter alt text"
+            disabled={disabled}
+            errorMessage={errors.imageAlt}
+          />
+        </div>
+
         <CenterImagePositionFields
           values={values}
           errors={errors}
@@ -217,6 +230,24 @@ export default function IndustryHeroSection({
                     placeholder={`Enter image ${index + 1} URL`}
                     disabled={disabled}
                     errorMessage={errors.otherImages?.[index]?.url}
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <TextInput
+                    name={`otherImages.${index}.alt`}
+                    label="Alt text"
+                    value={image.alt ?? ""}
+                    onChange={(event) =>
+                      handleOtherImageFieldChange(
+                        index,
+                        "alt",
+                        event.target.value
+                      )
+                    }
+                    placeholder="Enter alt text"
+                    disabled={disabled}
+                    errorMessage={errors.otherImages?.[index]?.alt}
                   />
                 </div>
 

@@ -1,3 +1,11 @@
+/*
+ * Demote antd's (unlayered) CSS-in-JS styles into their own `@layer` and
+ * place it below Tailwind's `components`/`utilities` layers, so Tailwind
+ * utility classes always win over antd's default styles (e.g. link colors).
+ * See: https://ant.design/docs/react/compatible-style#antd-config-layer
+ */
+@layer theme, base, antd, components, utilities;
+
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));

@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "antd";
+import { useRouter } from "next/navigation";
+import { App, Button } from "antd";
+import { useCreateIndustryPage } from "@/api/actions/industryPages";
+import CommonSections, {
+  createDefaultCommonSections,
+} from "@/components/forms/CommonSections";
 import FaqSection, { createEmptyFaq } from "@/components/forms/FaqSection";
 import FeaturesForm, {
   createEmptyFeature,
@@ -18,38 +23,41 @@ import OutletTypes, {
 } from "@/components/forms/OutletTypes";
 import PageDetails from "@/components/forms/PageDetails";
 import PageHeader from "@/components/ui/PageHeader";
+import { ErrorAlert } from "@/components/ui/ErrorBoundary";
+import { buildIndustryPagePayload } from "@/pages/industryPages/buildPayload";
 
-const INITIAL_VALUES = {
-  pageName: "",
-  location: "",
-  route: "",
-  title: "",
-  description: "",
-  canonical: "",
-  alternate: "",
-  ogTitle: "",
-  ogDescription: "",
-  ogImage: "",
-  ogUrl: "",
-  titlePrimary: "",
-  titleSecondary: "",
-  heroDescription: "",
-  centerImage: "",
-  imageWidth: "",
-  imageHeight: "",
-  imageTop: "",
-  imageLeft: "",
-  imageBottom: "",
-  imageRight: "",
-  otherImages: [createEmptyOtherImage(), createEmptyOtherImage()],
-  features: [createEmptyFeature()],
-  otherImpFeatures: [
-    createEmptyOtherImpFeature(),
-    createEmptyOtherImpFeature(),
-  ],
-  outletTypes: [createEmptyOutletType(), createEmptyOutletType()],
-  faqs: [createEmptyFaq(), createEmptyFaq()],
-};
+/** Fresh copy of the form's default state — used on mount and when clearing the form. */
+function createInitialValues() {
+  return {
+    pageName: "",
+    location: "",
+    route: "",
+    title: "",
+    description: "",
+    canonical: "",
+    alternate: "",
+    ogTitle: "",
+    ogDescription: "",
+    ogImage: "",
+    ogUrl: "",
+    titlePrimary: "",
+    titleSecondary: "",
+    heroDescription: "",
+    centerImage: "",
+    imageWidth: "",
+    imageHeight: "",
+    imageTop: "",
+    imageLeft: "",
+    imageBottom: "",
+    imageRight: "",
+    otherImages: [createEmptyOtherImage()],
+    features: [createEmptyFeature()],
+    otherImpFeatures: [createEmptyOtherImpFeature()],
+    outletTypes: [createEmptyOutletType()],
+    faqs: [createEmptyFaq()],
+    commonSections: createDefaultCommonSections(),
+  };
+}
 
 const STEP_COPY = {
   1: "Step 1 of 5 — Page details and meta data",
@@ -60,11 +68,45 @@ const STEP_COPY = {
 };
 
 export default function IndustryPagesCreate() {
-  const [values, setValues] = useState(INITIAL_VALUES);
+  const router = useRouter();
+  const { modal } = App.useApp();
+  const [values, setValues] = useState(createInitialValues);
   const [step, setStep] = useState(1);
+  const [submitError, setSubmitError] = useState("");
+  const createIndustryPage = useCreateIndustryPage();
 
   function handleChange(name, value) {
     setValues((prev) => ({ ...prev, [name]: value }));
+  }
+
+  function handleClearForm() {
+    modal.confirm({
+      title: "Clear form?",
+      content:
+        "This will remove everything you've filled in so far. This action cannot be undone.",
+      okText: "Clear form",
+      okButtonProps: { danger: true },
+      cancelText: "Cancel",
+      onOk: () => {
+        setValues(createInitialValues());
+        setStep(1);
+        setSubmitError("");
+      },
+    });
+  }
+
+  async function handleSubmit() {
+    setSubmitError("");
+    try {
+      const payload = buildIndustryPagePayload(values);
+      await createIndustryPage.mutateAsync(payload);
+      router.push("/industry-pages/list");
+      router.refresh();
+    } catch (error) {
+      setSubmitError(
+        error?.message || "Failed to create industry page. Please try again."
+      );
+    }
   }
 
   return (
@@ -74,6 +116,13 @@ export default function IndustryPagesCreate() {
         description={STEP_COPY[step]}
         buttons={[
           { label: "Back", href: "/industry-pages/list", variant: "secondary" },
+          {
+            key: "clear",
+            label: "Clear form",
+            onClick: handleClearForm,
+            variant: "secondary",
+            disabled: createIndustryPage.isPending,
+          },
         ]}
       />
 
@@ -162,8 +211,25 @@ export default function IndustryPagesCreate() {
               onChange={(faqs) => handleChange("faqs", faqs)}
               title="FAQs"
             />
+            <CommonSections
+              values={values.commonSections}
+              onChange={(commonSections) =>
+                handleChange("commonSections", commonSections)
+              }
+              title="Common sections"
+            />
+            <ErrorAlert message={submitError} />
             <div className="flex justify-between">
-              <Button onClick={() => setStep(4)}>Previous</Button>
+              <Button onClick={() => setStep(4)} disabled={createIndustryPage.isPending}>
+                Previous
+              </Button>
+              <Button
+                type="primary"
+                onClick={handleSubmit}
+                loading={createIndustryPage.isPending}
+              >
+                {createIndustryPage.isPending ? "Submitting..." : "Submit"}
+              </Button>
             </div>
           </>
         ) : null}

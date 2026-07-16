@@ -10,6 +10,7 @@ import { Button, Card } from "antd";
 export function createEmptyOtherImpFeature() {
   return {
     image: "",
+    tag: "",
     title: "",
     description: "",
   };
@@ -93,6 +94,20 @@ export default function OtherImpFeatures({
                     placeholder="Enter image URL"
                     disabled={disabled}
                     errorMessage={errors[index]?.image}
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <TextInput
+                    name={`otherImpFeatures.${index}.tag`}
+                    label="Tag"
+                    value={item.tag ?? ""}
+                    onChange={(event) =>
+                      handleItemChange(index, "tag", event.target.value)
+                    }
+                    placeholder="Enter tag"
+                    disabled={disabled}
+                    errorMessage={errors[index]?.tag}
                   />
                 </div>
 
